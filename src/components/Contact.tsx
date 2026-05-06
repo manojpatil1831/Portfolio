@@ -34,6 +34,7 @@ const Contact = () => {
       name: formData.name,
       email: formData.email,
       message: formData.message,
+      formType: "contact",
     });
     setSendingMessage(false);
 
@@ -53,6 +54,7 @@ const Contact = () => {
       name: feedbackData.name,
       email: feedbackData.email,
       message: feedbackData.feedback,
+      formType: "feedback",
     });
     setSendingFeedback(false);
 

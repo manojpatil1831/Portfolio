@@ -1,73 +1,100 @@
-# Welcome to your Lovable project
+# Chic Portfolio Design
 
-## Project info
+Production-ready React + Vite portfolio with contact and feedback forms that work on static hosting (GitHub Pages) using EmailJS and/or Web3Forms.
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+## 1) Local Setup
 
-## How can I edit this code?
+Prerequisites:
+- Node.js 20+ (LTS recommended)
+- npm (comes with Node.js)
 
-There are several ways of editing your application.
+Install and run:
 
-**Use Lovable**
-
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
-
-Changes made via Lovable will be committed automatically to this repo.
-
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
+```bash
+npm install
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+## 2) Contact Form Setup (EmailJS)
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+This project supports client-side email sending for static hosting.
 
-**Use GitHub Codespaces**
+Create `.env` in project root:
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+```bash
+VITE_EMAILJS_PUBLIC_KEY=your_public_key_here
+VITE_EMAILJS_SERVICE_ID=your_service_id_here
+VITE_EMAILJS_TEMPLATE_ID=your_template_id_here
+```
 
-## What technologies are used for this project?
+Important:
+- Use the **Public Key** from EmailJS in `VITE_EMAILJS_PUBLIC_KEY`.
+- Do **not** put EmailJS private key in frontend env files.
+- Your EmailJS template must include these variables:
+  - `form_type`
+  - `from_name`
+  - `from_email`
+  - `subject`
+  - `message`
 
-This project is built with:
+Optional fallback:
+- You can also configure `VITE_WEB3FORMS_ACCESS_KEY` to use Web3Forms.
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+## 3) GitHub Pages Deployment
 
-## How can I deploy this project?
+### A) Set base path in GitHub Actions environment
 
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
+For repo deployment URL:
 
-## Can I connect a custom domain to my Lovable project?
+`https://<username>.github.io/<repo-name>/`
 
-Yes, you can!
+base path must be:
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+`/<repo-name>/`
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+This is configured in workflow by setting `VITE_BASE_PATH`.
+
+### B) Push to `main`
+
+The included GitHub Actions workflow builds and deploys to Pages on each push to `main`.
+
+## 4) Configure GitHub Secrets
+
+In GitHub repo:
+`Settings -> Secrets and variables -> Actions -> New repository secret`
+
+Add:
+- `VITE_EMAILJS_PUBLIC_KEY`
+- `VITE_EMAILJS_SERVICE_ID`
+- `VITE_EMAILJS_TEMPLATE_ID`
+- Optional: `VITE_WEB3FORMS_ACCESS_KEY`
+
+## 5) First-Time GitHub Pages Enablement
+
+In GitHub repo:
+`Settings -> Pages`
+
+Set:
+- Source: `GitHub Actions`
+
+Then push to `main` and wait for deployment to complete.
+
+## 6) Production Checklist
+
+- `npm run build` succeeds locally
+- EmailJS template variables match exactly
+- GitHub secrets are present
+- Workflow run is green
+- Open deployed URL and test:
+  - Send Message form
+  - Feedback form
+
+## 7) Troubleshooting
+
+- Form does not send:
+  - Recheck EmailJS service ID, template ID, and public key.
+  - Confirm template variable names match exactly.
+- Blank or broken asset paths:
+  - Ensure `VITE_BASE_PATH` equals `/<repo-name>/` in workflow.
+- 404 on direct route refresh:
+  - Workflow creates `404.html` fallback automatically for SPA routing.

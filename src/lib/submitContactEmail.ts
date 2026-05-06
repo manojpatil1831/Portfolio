@@ -9,18 +9,11 @@ export type ContactPayload = {
   name: string;
   email: string;
   message: string;
+  formType: "contact" | "feedback";
 };
 
 function envStr(v: unknown): string {
   return typeof v === "string" ? v.trim() : "";
-}
-
-/** Vercel functions are mounted at /api/* on the deployment root (not under Vite base). */
-function getApiContactUrl(): string {
-  if (typeof window !== "undefined") {
-    return `${window.location.origin}/api/contact`;
-  }
-  return "/api/contact";
 }
 
 async function submitViaWeb3Forms(payload: ContactPayload): Promise<SubmitInboxResult> {
@@ -99,6 +92,7 @@ async function submitViaEmailJS(payload: ContactPayload): Promise<SubmitInboxRes
       templateId,
       {
         subject: payload.subject,
+        form_type: payload.formType,
         from_name: payload.name,
         from_email: payload.email,
         message: payload.message,
@@ -146,44 +140,10 @@ async function submitViaClient(payload: ContactPayload): Promise<SubmitInboxResu
   };
 }
 
-async function parseApiJson(res: Response): Promise<{ success?: boolean; message?: string }> {
-  try {
-    return (await res.json()) as { success?: boolean; message?: string };
-  } catch {
-    return {};
-  }
-}
-
 /**
- * Production: POST /api/contact (Web3Forms from server — avoids *.vercel.app browser blocks).
- * Falls back to client Web3Forms/EmailJS if the API is missing or returns an error.
+ * Static hosting only: submit directly from the browser.
+ * GitHub Pages cannot run `/api/contact`, so this uses Web3Forms or EmailJS.
  */
 export async function submitToInbox(payload: ContactPayload): Promise<SubmitInboxResult> {
-  if (import.meta.env.PROD) {
-    try {
-      const res = await fetch(getApiContactUrl(), {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-      const data = await parseApiJson(res);
-
-      if (res.ok && data.success) {
-        return { success: true };
-      }
-
-      const client = await submitViaClient(payload);
-      if (client.success) return client;
-
-      if (res.status === 400) {
-        return { success: false, error: data.message ?? "Please check the form fields." };
-      }
-      const errMsg = client.success === false ? client.error : "Could not send your message.";
-      return { success: false, error: errMsg };
-    } catch {
-      return submitViaClient(payload);
-    }
-  }
-
   return submitViaClient(payload);
 }
